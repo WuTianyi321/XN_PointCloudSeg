@@ -25,12 +25,13 @@ class XN_PointCloudDataset(data.Dataset):
 
 
     def __getitem__(self,index):
-        dirname = self.root + self.dirs[index]
-        point_set = np.asarray(o3d.io.read_point_cloud(dirname +'\\PointCloudCapture.pcd').points).astype(np.int64)
-        seg_classes = np.loadtxt(dirname + '\\label.txt').astype(np.float32)
+        dirname = self.root +'\\'+ self.dirs[index]
+        point_set = np.asarray(o3d.io.read_point_cloud(dirname +'\\PointCloudCapture.pcd').points).astype(np.float32)
+        seg_classes = np.loadtxt(dirname + '\\label.txt').astype(np.int)
         choice = np.random.choice(len(seg_classes), self.npoints, replace=True)
         point_set=point_set[choice,:]
-        seg=torch.from_numpy(seg_classes[choice])
+        seg=torch.tensor(seg_classes[choice], dtype=torch.long)
+        #seg=torch.from_numpy(seg_classes[choice])
         point_set = torch.from_numpy(point_set)
         return point_set,seg
     

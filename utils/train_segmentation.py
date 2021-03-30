@@ -1,6 +1,10 @@
 from __future__ import print_function
-import argparse
+import sys
 import os
+path=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0,path)
+
+import argparse
 import random
 import torch
 import torch.nn.parallel
@@ -11,8 +15,6 @@ from pointnet.model import PointNetDenseCls, feature_transform_regularizer
 import torch.nn.functional as F
 from tqdm import tqdm
 import numpy as np
-
-import sys
 
 
 parser = argparse.ArgumentParser()
@@ -31,6 +33,8 @@ parser.add_argument('--feature_transform', action='store_true', help="use featur
 opt = parser.parse_args()
 print(opt)
 
+
+
 opt.manualSeed = random.randint(1, 10000)  # fix seed
 print("Random Seed: ", opt.manualSeed)
 random.seed(opt.manualSeed)
@@ -42,7 +46,8 @@ dataloader = torch.utils.data.DataLoader(
     dataset,
     batch_size=opt.batchSize,
     shuffle=True,
-    num_workers=int(opt.workers))
+    #num_workers=int(opt.workers)
+    )
 
 test_dataset = XN_PointCloudDataset(
     root=opt.dataset,
@@ -51,7 +56,8 @@ testdataloader = torch.utils.data.DataLoader(
     test_dataset,
     batch_size=opt.batchSize,
     shuffle=True,
-    num_workers=int(opt.workers))
+    #num_workers=int(opt.workers)
+    )
 
 print(len(dataset), len(test_dataset))
 num_classes = dataset.num_seg_classes
