@@ -33,7 +33,7 @@ parser.add_argument('--feature_transform', action='store_true', help="use featur
 opt = parser.parse_args()
 print(opt)
 
-
+npoints=5000
 
 opt.manualSeed = random.randint(1, 10000)  # fix seed
 print("Random Seed: ", opt.manualSeed)
@@ -41,7 +41,8 @@ random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 
 dataset = XN_PointCloudDataset(
-    root=opt.dataset)
+    root=opt.dataset
+    ,npoints=npoints)
 dataloader = torch.utils.data.DataLoader(
     dataset,
     batch_size=opt.batchSize,
@@ -50,8 +51,9 @@ dataloader = torch.utils.data.DataLoader(
     )
 
 test_dataset = XN_PointCloudDataset(
-    root=opt.dataset,
-    split='test')
+    root=opt.dataset
+    ,split='test'
+    ,npoints=npoints)
 testdataloader = torch.utils.data.DataLoader(
     test_dataset,
     batch_size=opt.batchSize,
@@ -92,14 +94,15 @@ for epoch in range(opt.nepoch):
         pred = pred.view(-1, num_classes)
         target = target.view(-1, 1)[:, 0] - 1
         #print(pred.size(), target.size())
-        loss = F.nll_loss(pred, target)
+        #loss = F.nll_loss(pred, target)
+        loss = torch.nn.CrossEntropyLoss()(pred,target)
         if opt.feature_transform:
             loss += feature_transform_regularizer(trans_feat) * 0.001
         loss.backward()
         optimizer.step()
         pred_choice = pred.data.max(1)[1]
         correct = pred_choice.eq(target.data).cpu().sum()
-        print('[%d: %d/%d] train loss: %f accuracy: %f' % (epoch, i, num_batch, loss.item(), correct.item()/float(opt.batchSize * 2500)))
+        print('[%d: %d/%d] train loss: %f accuracy: %f' % (epoch, i, num_batch, loss.item(), correct.item()/float(opt.batchSize * npoints)))
 
         if i % 10 == 0:
             j, data = next(enumerate(testdataloader, 0))
@@ -113,7 +116,7 @@ for epoch in range(opt.nepoch):
             loss = F.nll_loss(pred, target)
             pred_choice = pred.data.max(1)[1]
             correct = pred_choice.eq(target.data).cpu().sum()
-            print('[%d: %d/%d] %s loss: %f accuracy: %f' % (epoch, i, num_batch, blue('test'), loss.item(), correct.item()/float(opt.batchSize * 2500)))
+            print('[%d: %d/%d] %s loss: %f accuracy: %f' % (epoch, i, num_batch, blue('test'), loss.item(), correct.item()/float(opt.batchSize * npoints)))
 
     torch.save(classifier.state_dict(), '%s/seg_model_%s_%d.pth' % (opt.outf, opt.class_choice, epoch))
 
@@ -144,3 +147,4 @@ for i,data in tqdm(enumerate(testdataloader, 0)):
         shape_ious.append(np.mean(part_ious))
 
 print("mIOU for class {}: {}".format(opt.class_choice, np.mean(shape_ious)))
+torch.cuda.empty_cache()

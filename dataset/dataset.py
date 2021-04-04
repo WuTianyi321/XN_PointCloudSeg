@@ -10,7 +10,7 @@ import open3d as o3d
 
 
 class XN_PointCloudDataset(data.Dataset):
-    def __init__(self,root,split='train',npoints=2500):
+    def __init__(self,root,split='train',npoints=5000):
         self.root = root
         self.npoints=npoints
         self.num_seg_classes=2
