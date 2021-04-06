@@ -10,7 +10,7 @@ import torch
 import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
-from dataset.dataset import XN_PointCloudDataset
+from data.dataset import XN_PointCloudDataset
 from model.pointnet import PointNetDenseCls, feature_transform_regularizer
 import torch.nn.functional as F
 from tqdm import tqdm
