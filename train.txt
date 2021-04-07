@@ -1,0 +1,2 @@
+activate pointnet
+python utils/train_segmentation.py --dataset "D:\Users\WuTianyi\OneDrive - wutianyidev\NEU\课程\MATH7243 Machine Learning\大作业\Cloud Sample Data" --nepoch=5
