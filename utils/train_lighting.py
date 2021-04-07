@@ -41,12 +41,13 @@ class ClassificationTask(pl.LightningModule):
         acc = FM.accuracy(torch.exp(y_hat.view(-1,2)), y.view(-1))
         metrics = {'val_acc': acc, 'val_loss': loss}
         self.log_dict(metrics)
-        self.log('val_acc', metrics['val_acc'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_acc', metrics['val_acc'], on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return metrics
 
      def test_step(self, batch, batch_idx):
         metrics = self.validation_step(batch, batch_idx)
         metrics = {'test_acc': metrics['val_acc'], 'test_loss': metrics['val_loss']}
+        #self.log('val_acc', metrics['val_acc'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
         self.log_dict(metrics)
 
 
@@ -78,7 +79,7 @@ test_dataset = XN_PointCloudDataset(
 val_loader = torch.utils.data.DataLoader(
     test_dataset,
     batch_size=32,
-    shuffle=True,
+    shuffle=False,
     #num_workers=int(opt.workers)
     )
 # model
