@@ -27,6 +27,8 @@ class ClassificationTask(pl.LightningModule):
          y_hat = y_hat.view(-1, 2)
          #loss = F.cross_entropy(y_hat, y)
          loss = F.nll_loss(y_hat, y.view(-1))
+         acc = FM.accuracy(torch.exp(y_hat.view(-1,2)), y.view(-1))
+         #self.log('training_acc', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True)
          return loss
 
      def validation_step(self, batch, batch_idx):
@@ -39,7 +41,7 @@ class ClassificationTask(pl.LightningModule):
         acc = FM.accuracy(torch.exp(y_hat.view(-1,2)), y.view(-1))
         metrics = {'val_acc': acc, 'val_loss': loss}
         self.log_dict(metrics)
-        self.log('val_acc', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_acc', metrics['val_acc'], on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return metrics
 
      def test_step(self, batch, batch_idx):
