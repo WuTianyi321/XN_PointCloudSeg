@@ -34,6 +34,7 @@ class ClassificationTask(pl.LightningModule):
         #y_hat = y_hat.view(-1, 1)[:, 0]
         #loss = F.cross_entropy(y_hat, y)
         loss = F.nll_loss(y_hat, y.view(-1))
+        #print(1-torch.sum(y)/10000)
         acc = FM.accuracy(torch.exp(y_hat.view(-1,2)), y.view(-1))
         metrics = {'val_acc': acc, 'val_loss': loss}
         self.log_dict(metrics)
