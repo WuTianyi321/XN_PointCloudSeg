@@ -22,7 +22,7 @@ class ClassificationTask(pl.LightningModule):
          y_hat, trans_feat = self.model(x.transpose(2, 1))
          y_hat = y_hat.contiguous().view(-1, 2)
          #loss = F.cross_entropy(y_hat, y)
-         loss = F.nll_loss(y_hat, y.view(-1))
+         loss = F.nll_loss(y_hat, y.view(-1),weight =torch.cuda.FloatTensor([2,8]))
          acc = FM.accuracy(torch.exp(y_hat.view(-1,2)), y.view(-1))
          #self.log('training_acc', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True)
          return loss
@@ -33,13 +33,15 @@ class ClassificationTask(pl.LightningModule):
         y_hat = y_hat.contiguous().view(-1, 2)
         #y_hat = y_hat.view(-1, 1)[:, 0]
         #loss = F.cross_entropy(y_hat, y)
-        loss = F.nll_loss(y_hat, y.view(-1))
+        loss = F.nll_loss(y_hat, y.view(-1),weight =torch.cuda.FloatTensor([2,8]))
+        #loss=nn.BCELoss()(y_hat, y.view(-1))
         #print(1-torch.sum(y)/10000)
-        #print(torch.sum(torch.argmax(y_hat,dim=-1)))
+        predict_sum=torch.sum(torch.argmax(y_hat,dim=-1))
         acc = FM.accuracy(torch.exp(y_hat.view(-1,2)), y.view(-1))
-        metrics = {'val_acc': acc, 'val_loss': loss}
+        metrics = {'val_acc': acc, 'val_loss': loss,'val_predict_sum':predict_sum}
         self.log_dict(metrics)
         self.log('val_acc', metrics['val_acc'], on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log('val_predict_sum', metrics['predict_sum'], on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return metrics
 
      def test_step(self, batch, batch_idx):
@@ -50,7 +52,7 @@ class ClassificationTask(pl.LightningModule):
 
 
      def configure_optimizers(self):
-         return torch.optim.Adam(self.model.parameters(), lr=0.02)
+         return torch.optim.Adam(self.model.parameters(), lr=0.0005)
 
 npoints=5000
 # data
@@ -85,5 +87,5 @@ val_loader = torch.utils.data.DataLoader(
 model = ClassificationTask(get_model(num_classes=2))
 
 # training
-trainer = pl.Trainer()
+trainer = pl.Trainer(gpus=1)
 trainer.fit(model, train_loader, val_loader)
